@@ -131,10 +131,14 @@ export function registerHandlers(gladys, deps = {}) {
   }
 
   async function refreshAll() {
+    // In parallel: one address that never answers (30 s timeout) must not
+    // hold the others, nor the 60 s of the "Check the calendars now" action.
+    await Promise.all(
+      config.properties.flatMap((property) =>
+        property.urls.map((url) => downloadFeed(property, url)),
+      ),
+    );
     for (const property of config.properties) {
-      for (const url of property.urls) {
-        await downloadFeed(property, url);
-      }
       const state = properties.get(property.slot);
       if (!state) {
         continue;
