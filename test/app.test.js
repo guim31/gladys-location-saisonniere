@@ -251,3 +251,41 @@ test('an unchanged value is published again after the heartbeat', async (t) => {
   assert.equal(count(), before + 1, 'the heartbeat re-sent the unchanged value');
   world.app.stop();
 });
+
+test('a new check-in hour applies at once, even when the platform answers 304', async () => {
+  const world = await createWorld();
+  await world.fake.configUpdated({ ...CONFIG, property_1_check_in: '20' });
+  await world.app.idle();
+  assert.equal(world.state(1, 'next_check_in'), 'ven. 13 nov., 20:00 · Booking.com');
+  assert.ok(world.server.requests.some((request) => request.headers['if-none-match']));
+  world.app.stop();
+});
+
+test('a trigger reaches the scenes after the states it changes', async (t) => {
+  const world = await createWorld();
+  const seen = [];
+  const publish = world.gladys.publishSceneEvent.bind(world.gladys);
+  t.mock.method(world.gladys, 'publishSceneEvent', async (key, data) => {
+    seen.push([key, world.state(1, 'occupied'), world.state(1, 'arrival_soon')]);
+    return publish(key, data);
+  });
+  await world.advance(8 * HOUR);
+  assert.deepEqual(seen, [
+    ['check_out', 0, 0],
+    ['arrival_soon', 0, 1],
+    ['check_in', 1, 0],
+  ]);
+  world.app.stop();
+});
+
+test('after a disconnection, the moments of the outage do not fire', async () => {
+  const world = await createWorld();
+  await world.gladys.disconnect();
+  world.clock.now += 8 * HOUR; // the whole turnover day passes offline
+  await world.gladys.connect();
+  await world.app.idle();
+  await world.advance(MINUTE);
+  assert.deepEqual(world.fake.sceneEvents, []);
+  assert.equal(world.state(1, 'occupied'), 1);
+  world.app.stop();
+});

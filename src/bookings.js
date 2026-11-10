@@ -153,6 +153,8 @@ export function staysOfFeed(calendar, source) {
       checkOut,
       platform,
       kind,
+      checkInHour: source.checkInHour,
+      checkOutHour: source.checkOutHour,
       ...(kind === KIND.RESERVATION ? guestDetails(event.summary, event.description) : {}),
     });
   }
@@ -213,11 +215,31 @@ export function mergeStays(stays, config) {
     }
     // The "unavailable" copies of a booking go; two sure bookings still
     // overlapping are one stay listed twice (or a double booking): one stay.
-    for (const subgroup of clusters(sure)) {
-      merged.push(union(subgroup));
+    const bookings = clusters(sure).map(union);
+    merged.push(...bookings);
+    // What an "unavailable" event covers before the first booking or after
+    // the last one is another stay (back-to-back with it).
+    const first = bookings[0];
+    const last = bookings.at(-1);
+    for (const stay of group.filter((candidate) => candidate.kind !== KIND.RESERVATION)) {
+      if (stay.startDate < first.startDate) {
+        merged.push({
+          ...stay,
+          endDate: first.startDate,
+          checkOut: localTime(first.startDate, stay.checkOutHour),
+        });
+      }
+      if (stay.endDate > last.endDate) {
+        merged.push({
+          ...stay,
+          startDate: last.endDate,
+          checkIn: localTime(last.endDate, stay.checkInHour),
+        });
+      }
     }
   }
-  return merged
+  return clusters(merged)
+    .map(union)
     .map((stay) => ({ ...stay, nights: Math.max(1, daysBetween(stay.startDate, stay.endDate)) }))
     .sort((a, b) => a.checkIn - b.checkIn);
 }
@@ -245,7 +267,9 @@ export function propertyStatus(stays, now, config) {
     // Rounded up: "in 7 hours" until 6 h 59 are left, so "3 hours or less" means it.
     hoursToCheckIn: next ? Math.ceil(untilCheckIn / HOUR_MS) : NO_CHECK_IN_HOURS,
     daysToCheckIn: next ? Math.max(0, daysBetween(today, next.startDate)) : NO_CHECK_IN_DAYS,
-    nightsLeft: current ? Math.max(0, daysBetween(today, current.endDate)) : 0,
+    nightsLeft: current
+      ? Math.min(NO_CHECK_IN_DAYS, Math.max(0, daysBetween(today, current.endDate)))
+      : 0,
     nextCheckOut: current ?? next,
     upcoming: stays.filter((stay) => stay.checkOut > now),
   };

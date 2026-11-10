@@ -27,6 +27,9 @@ export const TICK_MS = 60_000;
 // A value that does not change is published again this often, so Gladys
 // never shows "no recent value" (it does past 48 h).
 export const HEARTBEAT_MS = 6 * 3_600_000;
+// Longest gap between two ticks whose moments still fire (a tick delayed by
+// a slow download); beyond, they are dropped.
+export const MAX_CATCH_UP_MS = 10 * 60_000;
 
 export const INIT_FAILED = {
   en: 'Initialization failed, check the integration logs.',
@@ -111,16 +114,19 @@ export function registerHandlers(gladys, deps = {}) {
         throw Object.assign(new Error('invalid_url'), { code: 'invalid_url' });
       }
       const result = await fetchFeed(normalized, {
-        etag: cache.stays ? cache.etag : undefined,
-        lastModified: cache.stays ? cache.lastModified : undefined,
+        etag: cache.calendar ? cache.etag : undefined,
+        lastModified: cache.calendar ? cache.lastModified : undefined,
         fetchImpl: deps.fetchImpl,
         userAgent: deps.userAgent,
       });
       if (!result.notModified) {
-        cache.stays = staysOfFeed(parseCalendar(result.text), { url: normalized.url, ...property });
+        cache.calendar = parseCalendar(result.text);
         cache.etag = result.etag;
         cache.lastModified = result.lastModified;
       }
+      // Computed again on every refresh, 304 included: the check-in and
+      // check-out hours of the property may have changed meanwhile.
+      cache.stays = staysOfFeed(cache.calendar, { url: normalized.url, ...property });
       cache.error = null;
       problems.recover(key, `Calendar of ${label} reachable again`);
       logger.debug(`${label}: ${cache.stays.length} stay(s)`);
@@ -187,10 +193,13 @@ export function registerHandlers(gladys, deps = {}) {
    */
   async function tick({ refreshWidget = false } = {}) {
     const at = now();
-    const from = lastTick ?? at;
+    // The moments passed since the last tick, within a bounded window: after
+    // an outage, a check-in of last week must not start a scene now.
+    const from = Math.max(lastTick ?? at, at - MAX_CATCH_UP_MS);
     lastTick = at;
     let changed = refreshWidget;
     const states = [];
+    const moments = [];
     for (const state of properties.values()) {
       const previous = state.status;
       state.status = propertyStatus(state.stays, at, config);
@@ -206,7 +215,7 @@ export function registerHandlers(gladys, deps = {}) {
       }
       states.push(...buildStates(gladys, state.property, state.status, config));
       for (const moment of momentsBetween(state.stays, from, at, config)) {
-        await fire(state, moment);
+        moments.push({ state, moment });
       }
     }
     try {
@@ -216,6 +225,11 @@ export function registerHandlers(gladys, deps = {}) {
       problems.recover('states', 'States published again');
     } catch (err) {
       problems.fail('states', `States not published: ${err.message}`);
+    }
+    // After the states: a scene started by "check-in" that tests "Occupied"
+    // reads the new value.
+    for (const { state, moment } of moments) {
+      await fire(state, moment);
     }
     if (changed) {
       gladys.requestWidgetRefresh(STAYS_WIDGET);
@@ -236,7 +250,7 @@ export function registerHandlers(gladys, deps = {}) {
           config,
         }),
       );
-      logger.info(`${moment.key} of ${name} sent to the scenes`);
+      logger.debug(`${moment.key} of ${name} sent to the scenes`);
     } catch (err) {
       logger.warn(`Scene trigger ${moment.key} not sent: ${err.message}`);
     }
@@ -296,6 +310,7 @@ export function registerHandlers(gladys, deps = {}) {
   });
 
   gladys.on('disconnected', () => {
+    lastTick = null;
     clearInterval(tickTimer);
     clearInterval(refreshTimer);
   });

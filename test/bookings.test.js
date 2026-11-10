@@ -210,3 +210,43 @@ test('guest details: Airbnb code, Vrbo first name, channel manager reservation',
   });
   assert.deepEqual(guestDetails('Not available', ''), {});
 });
+
+test('an "unavailable" block longer than the booking it copies keeps its extra days', () => {
+  const reserved = {
+    events: [
+      {
+        uid: 'r',
+        summary: 'Reserved',
+        status: '',
+        start: { date: '2026-12-03', time: null },
+        end: { date: '2026-12-05', time: null },
+      },
+    ],
+  };
+  const closed = {
+    events: [
+      {
+        uid: 'c',
+        summary: 'CLOSED - Not available',
+        status: '',
+        start: { date: '2026-12-01', time: null },
+        end: { date: '2026-12-12', time: null },
+      },
+    ],
+  };
+  const stays = mergeStays(
+    [
+      ...staysOfFeed(reserved, { url: URLS.airbnb, ...HOURS }),
+      ...staysOfFeed(closed, { url: URLS.booking, ...HOURS }),
+    ],
+    CONFIG,
+  );
+  assert.deepEqual(
+    stays.map((stay) => [stay.startDate, stay.endDate, stay.platform]),
+    [
+      ['2026-12-01', '2026-12-03', 'Booking.com'],
+      ['2026-12-03', '2026-12-05', 'Airbnb'],
+      ['2026-12-05', '2026-12-12', 'Booking.com'],
+    ],
+  );
+});

@@ -277,5 +277,8 @@ long, et sur un « Sie »/« Ihr… » de politesse en allemand. Le store exige 
 - Le **heartbeat** de `publishChangedStates` se date avec `Date.now()` du SDK, pas avec l'horloge injectée : un test
   qui le vérifie doit aussi simuler `Date` (`t.mock.timers`).
 - Les déclencheurs partent quand l'horloge d'une minute **franchit** l'instant (de la minute précédente exclue à
-  maintenant incluse) : rien n'est rattrapé après un redémarrage, rien ne part deux fois après un rechargement des
+  maintenant incluse, fenêtre bornée à 10 min et remise à zéro à la déconnexion) : rien n'est rattrapé après un
+  redémarrage ou une coupure, rien ne part deux fois après un rechargement des
   flux.
+- Les états sont publiés **avant** les déclencheurs du même tick : une scène « à l'arrivée, si Occupé » lit la
+  nouvelle valeur. Les séjours sont recalculés à chaque rafraîchissement, 304 compris (heures modifiées).

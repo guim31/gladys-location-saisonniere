@@ -86,10 +86,11 @@ export function staysContent(properties, { settings = {}, language, showGuestDet
       const badge = badgeOf(stay, property.status, text);
       return {
         title: `${formatDate(stay.checkIn, lang)} → ${formatDate(stay.checkOut, lang)}`,
+        // The name last: a long one is cut by the core, not the nights.
         subtitle: [
-          chosen.length > 1 ? property.name : null,
           format.nights(stay.nights),
           stay.platform,
+          chosen.length > 1 ? property.name : null,
         ]
           .filter(Boolean)
           .join(' · '),

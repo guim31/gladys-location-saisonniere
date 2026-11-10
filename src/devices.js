@@ -51,7 +51,7 @@ const BLUEPRINT = [
     type: 'integer',
     unit: 'days',
     min: 0,
-    max: 365,
+    max: NO_CHECK_IN_DAYS,
   },
 ];
 
