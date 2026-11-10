@@ -1,41 +1,94 @@
 // -----------------------------------------------------------------------------
-// Scene actions (SDK v0.14+, Gladys 5.1+).
-//
-// A scene action is an OPERATION a scene author places in a scene, with
-// parameters and a result: "identify this device", "take a snapshot", "clean
-// these rooms". Each one is declared in the manifest `scene_actions` field
-// (key, label, `fields` in the config_schema grammar, scalar `outputs`) and
-// handled here, keyed by that same `key`; index.js registers every entry with
-// `gladys.onSceneAction(key, ...)`.
-//
-// Scene TRIGGERS are the other direction ("this happened"): they are fired by
-// the device that observes the event, see src/devices/motionSensor.js.
-//
-// The rules that matter:
-//   - `fields` arrive RESOLVED: scene variables substituted, defaults applied,
-//     validated by the core; a `"source": "devices"` field is the chosen
-//     device external_id;
-//   - resolve an object of the declared `outputs` (scalars only), readable by
-//     the following actions of the scene, or `undefined` for none. Keys not
-//     declared in the manifest are dropped by the core;
-//   - throwing fails THIS action only: the scene logs it and continues. A
-//     scene action is never a condition: return an output and let the scene
-//     author gate on it;
-//   - never fire a scene event as a consequence of a received action: a scene
-//     bound to that event would loop through the integration.
+// Scene triggers (manifest `scene_triggers`) and the scene action
+// (`scene_actions`). The triggers are moments, fired once when the clock
+// passes them: the check-in time, the check-out time, and the check-in minus
+// the lead time ("preheat N hours before"). The device states hold the rest
+// (occupied, turnover today…) for the scenes that need a condition.
 // -----------------------------------------------------------------------------
 
-import { createLogger } from '@gladysassistant/integration-sdk';
-import { signalDevice } from './devices/index.js';
+import { NO_CHECK_IN_DAYS } from './bookings.js';
+import { pick, TEXT, formatDateTime } from './i18n.js';
+import { HOUR_MS } from './time.js';
 
-const logger = createLogger({ name: 'scenes' });
-
-export const SCENE_ACTIONS = {
-  // The ack is awaited under the action's `timeout_seconds` (15 s in the
-  // manifest), counted from the moment the scene reaches the action.
-  async identify_device(gladys, { fields, config }) {
-    logger.info(`Scene action identify_device <- ${fields.device}`);
-    const signalled = await signalDevice(gladys, fields.device, config);
-    return { signalled };
-  },
+export const TRIGGERS = {
+  CHECK_IN: 'check_in',
+  CHECK_OUT: 'check_out',
+  ARRIVAL_SOON: 'arrival_soon',
 };
+
+export const SCENE_TRIGGER_KEYS = Object.values(TRIGGERS);
+
+/**
+ * The moments passed between `from` (excluded) and `to` (included), for the
+ * stays of one property.
+ * @returns {{ key: string, stay: object, at: number }[]}
+ */
+export function momentsBetween(stays, from, to, config) {
+  const moments = [];
+  const passed = (at) => at > from && at <= to;
+  for (const stay of stays) {
+    const soonAt = stay.checkIn - config.lead_hours * HOUR_MS;
+    if (config.lead_hours > 0 && passed(soonAt)) {
+      moments.push({ key: TRIGGERS.ARRIVAL_SOON, stay, at: soonAt });
+    }
+    if (passed(stay.checkIn)) {
+      moments.push({ key: TRIGGERS.CHECK_IN, stay, at: stay.checkIn });
+    }
+    if (passed(stay.checkOut)) {
+      moments.push({ key: TRIGGERS.CHECK_OUT, stay, at: stay.checkOut });
+    }
+  }
+  return moments.sort((a, b) => a.at - b.at);
+}
+
+/**
+ * The flat `data` of a trigger: `property` is the filter (the device chosen
+ * in the scene editor), the other keys are the variables of the manifest.
+ */
+export function eventData({ deviceExternalId, name, stay, stays, config }) {
+  const turnover =
+    stays.some((other) => other !== stay && other.startDate === stay.endDate) ||
+    stays.some((other) => other !== stay && other.endDate === stay.startDate);
+  return {
+    property: deviceExternalId,
+    property_name: name,
+    platform: stay.platform,
+    nights: stay.nights,
+    check_in: formatDateTime(stay.checkIn, config.language),
+    check_out: formatDateTime(stay.checkOut, config.language),
+    turnover,
+    guest: config.show_guest_details ? (stay.guest ?? null) : null,
+  };
+}
+
+/**
+ * The `next_stay` scene action: the ongoing or next stay of one property,
+ * for a message ("Next check-in Fri 14 Nov, 16:00, 2 nights").
+ * @param {{ status: object, name: string } | null} property state of the property
+ */
+export function nextStayOutputs(property, config) {
+  const text = pick(TEXT, config.language);
+  const stay = property?.status.current ?? property?.status.next ?? null;
+  if (!stay) {
+    return {
+      found: false,
+      property_name: property?.name ?? '',
+      occupied: false,
+      check_in: text.noBooking,
+      check_out: text.noBooking,
+      nights: 0,
+      days_to_check_in: NO_CHECK_IN_DAYS,
+      platform: '',
+    };
+  }
+  return {
+    found: true,
+    property_name: property.name,
+    occupied: property.status.occupied,
+    check_in: formatDateTime(stay.checkIn, config.language),
+    check_out: formatDateTime(stay.checkOut, config.language),
+    nights: stay.nights,
+    days_to_check_in: property.status.occupied ? 0 : property.status.daysToCheckIn,
+    platform: stay.platform,
+  };
+}

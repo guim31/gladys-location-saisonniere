@@ -31,16 +31,21 @@ pushing.
 ## Architecture
 
 ```
-index.js                          SDK wiring only: handlers registered before connect()
-src/devices/index.js              registry of the device blueprints + dispatch helpers
-src/devices/<type>.js             one device type per file (buildDevice, onPoll, onSetValue...)
-src/scenes.js                     scene action handlers (manifest `scene_actions`)
-src/widgets.js                    dashboard widget handlers (manifest `widgets`)
+index.js                          SDK wiring only: registerHandlers(gladys), connect()
+src/app.js                        handlers, feed downloads, one-minute clock (states, scene triggers)
 src/config.js                     DEFAULT_CONFIG (mirrors the manifest defaults) + normalization
-src/weather.js                    example driver (Open-Meteo)
+src/fetcher.js, src/url.js        bounded, conditional download; address masking (from gladys-ics-calendar)
+src/ical.js                       minimal iCalendar reader (DATE, UTC, TZID, floating; no RRULE)
+src/bookings.js                   classification, platform, merge of the feeds, status of a property
+src/devices.js                    one device per property, its features and states
+src/scenes.js                     scene trigger moments and data, the next_stay scene action
+src/widgets.js                    the `stays` dashboard widget
+src/i18n.js                       texts in en / fr / de / es, date formats
+src/problems.js                   one log line per problem, not per attempt
 gladys-assistant-integration.json manifest: name, config_schema, actions, image...
-docs/en.md, docs/fr.md            user documentation, re-hosted by Gladys (mandatory)
+docs/{en,fr,de,es}.md             user documentation, re-hosted by Gladys (mandatory)
 test/                             node --test, against the SDK's fake Gladys (integration-sdk/testing)
+test/fixtures/feeds/              real platform exports (anonymized) + scenario feeds
 .github/scripts/release.mjs       release helpers (manifest bump, changelog), tested in test/
 ```
 
@@ -70,8 +75,8 @@ test/                             node --test, against the SDK's fake Gladys (in
   `type: "provider"`: 5.1.0). `test/manifest.test.js` ties the manifest to the
   code (defaults, action, scene and widget handlers): change both sides
   together.
-- **User-facing text** is bilingual (English and French): action messages,
-  manifest texts, and `docs/en.md` / `docs/fr.md`, kept in sync.
+- **User-facing text** exists in English, French, German and Spanish: action
+  messages, manifest texts, and `docs/{en,fr,de,es}.md`, kept in sync.
 - **Style.** Prettier formats, ESLint catches mistakes. Comments explain why,
   in English. Tests never touch the network.
 
@@ -251,3 +256,26 @@ long, et sur un « Sie »/« Ihr… » de politesse en allemand. Le store exige 
 - Docs `en`, `fr`, `de`, `es` avec les mêmes sections.
 - Chauffe, ouverture, sécurité : ne rien rendre pilotable « comme un thermostat » ou par un assistant
   vocal quand une erreur serait dangereuse (leçon d'OctoPrint).
+
+## Location saisonnière : ce qu'il faut savoir
+
+- **Exports des plateformes** (vérifiés sur des exports réels, `test/fixtures/feeds`) : Airbnb écrit « Reserved »
+  (code HM… dans DESCRIPTION) et « Airbnb (Not available) » pour tout le reste, **y compris les réservations
+  importées des autres plateformes** ; Vrbo / Abritel « Reserved - Prénom » et « Blocked » ; Booking.com
+  « CLOSED - Not available » pour **chaque** événement (réservation ou fermeture, indiscernables) ; Smoobu « Not
+  available » pour ses réservations, et parfois des marqueurs « Check-in » / « Check-out ». D'où trois classes
+  (réservation, blocage ignoré, « unavailable » compté comme séjour par défaut) et la fusion par chevauchement, la
+  réservation nommée l'emportant sur ses copies.
+- Les exports donnent des **jours** (`VALUE=DATE`, DTEND = jour du départ) : heures d'arrivée et de départ par
+  logement. Une heure à minuit est lue comme un jour ; une vraie heure (gestionnaire de canaux) est gardée.
+- **Pas de bibliothèque iCal** : ces flux n'ont pas de récurrence, le petit lecteur de `src/ical.js` suffit et
+  garde l'image légère (node-ical tire temporal-polyfill).
+- Identifiant d'appareil = **numéro d'emplacement** du logement (1 à 3) : renommer ou changer d'adresse garde
+  l'appareil ; déplacer un logement d'emplacement change d'appareil.
+- Valeurs « aucune arrivée connue » : 9999 h et 999 jours (bornes `max` des fonctionnalités), pour qu'un seuil
+  « moins de N heures » ne parte jamais dessus.
+- Le **heartbeat** de `publishChangedStates` se date avec `Date.now()` du SDK, pas avec l'horloge injectée : un test
+  qui le vérifie doit aussi simuler `Date` (`t.mock.timers`).
+- Les déclencheurs partent quand l'horloge d'une minute **franchit** l'instant (de la minute précédente exclue à
+  maintenant incluse) : rien n'est rattrapé après un redémarrage, rien ne part deux fois après un rechargement des
+  flux.
