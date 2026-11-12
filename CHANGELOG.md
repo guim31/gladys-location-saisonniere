@@ -10,6 +10,8 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-12
+
 ### Added
 
 - Up to three rental properties, each read from one or more iCal export
@@ -29,4 +31,5 @@ the notes of the version's GitHub Release.
 - "Check the calendars now" action in the configuration screen.
 - Texts and documentation in English, French, German and Spanish.
 
-[Unreleased]: https://github.com/guim31/gladys-location-saisonniere/commits/main
+[Unreleased]: https://github.com/guim31/gladys-location-saisonniere/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/guim31/gladys-location-saisonniere/releases/tag/v1.0.0
