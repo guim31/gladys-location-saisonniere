@@ -12,47 +12,21 @@ the notes of the version's GitHub Release.
 
 ### Added
 
-- A working example of scene triggers, scene actions and dashboard widgets
-  (Gladys 5.1.0 or later).
-- `CHANGELOG.md`, rolled by the Release workflow.
-- A GitHub Release for every version, with its changelog section as notes: the
-  Gladys Supervision page links each version to the repository's releases.
-- CI runs the tests on Node 22 and 24, and builds the Docker image.
-- Dependabot keeps the npm dependencies and the GitHub Actions up to date.
-- `SECURITY.md` (how to report a vulnerability) and `CLAUDE.md` (project rules
-  for contributors and coding assistants).
-- Manifest tests: `version` matches `package.json`, `docker_image` is tagged
-  with it, descriptions hold 10 to 100 characters, placeholders are
-  multi-language objects.
-- The latitude and longitude fields show an example value as placeholder.
+- Up to three rental properties, each read from one or more iCal export
+  calendars (Airbnb, Booking.com, Vrbo / Abritel, Gîtes de France, Smoobu and
+  other channel managers), with their check-in and check-out hours. The stays
+  of several platforms are merged, their copies removed.
+- One device per property: occupied, check-in soon, turnover today, next
+  check-in, next check-out, hours and days before check-in, nights left.
+- Bookings told apart from blocked dates; an option for the "Not available"
+  dates of Booking.com and Smoobu, counted as stays by default.
+- Scene triggers: guest check-in, guest check-out, check-in soon (a lead time
+  in hours, to preheat).
+- Scene action "Get the next stay".
+- Dashboard widget "Rental stays": occupied or vacant now, then the coming
+  stays.
+- Guest names and reservation codes hidden unless the user turns them on.
+- "Check the calendars now" action in the configuration screen.
+- Texts and documentation in English, French, German and Spanish.
 
-### Changed
-
-- Node.js 22 or later is required (Node 20 is end-of-life).
-- Integration SDK 0.16.0. The tests now run against the fake Gladys of the
-  SDK, which refuses the payloads Gladys refuses. A device published with a
-  `poll_frequency` is now polled without `should_poll: true` on a recent
-  core (an explicit `should_poll: false` opts out); the template keeps the
-  field explicit for the older cores.
-- The refresh interval is one minute minimum, the fastest Gladys polls a
-  device. The plug's power is only sent when it changes, and every 30
-  minutes otherwise.
-
-### Fixed
-
-- Gladys refused the devices of the Discovery tab: the weather station and
-  the plug declared their poll frequency in seconds instead of one of the
-  values Gladys accepts, and were never polled. They now poll every minute,
-  and the readings follow the refresh interval of the configuration.
-
-- The release commit no longer fails `npm run format:check`: the Release
-  workflow updates the manifest `version` and `docker_image` in place instead
-  of re-printing the whole file with `jq`.
-- The integration can write to `/data`: the image creates the directory owned
-  by the `node` user, a new Docker volume was owned by root.
-- A sub-container running the integration's own image follows it to the new
-  tag at each release, as well as in the manifest of the build summary: it kept
-  the previous tag, which may not exist on the registry. Sub-containers on a
-  third-party image (a broker, a database...) keep theirs.
-
-[Unreleased]: https://github.com/GladysAssistant/integration-template-js/commits/main
+[Unreleased]: https://github.com/guim31/gladys-location-saisonniere/commits/main

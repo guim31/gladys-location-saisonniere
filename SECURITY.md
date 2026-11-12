@@ -30,6 +30,14 @@ Gladys before reporting a problem.
 
 In scope: the code of this repository and the Docker image it publishes.
 
+The integration stores nothing on disk (`/data` stays empty). The iCal export
+addresses are secrets (whoever has one reads the calendar of the property):
+they are kept by Gladys in the integration configuration, used only to
+download the calendars, and never written to the logs, the scenes or the
+widget (only the host name is logged). Guest first names and reservation
+codes found in some feeds are only shown when the user turns that option on.
+The only network traffic is the download of those addresses.
+
 Out of scope: Gladys Assistant itself (see its
 [security policy](https://github.com/GladysAssistant/Gladys/security/policy)),
-and the third-party services and devices the integration talks to.
+and the platforms whose calendars the integration reads.

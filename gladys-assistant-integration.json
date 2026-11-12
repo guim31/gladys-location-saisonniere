@@ -1,177 +1,1512 @@
 {
   "manifest_version": 1,
   "type": "device",
-  "name": "Demo Devices Template",
+  "name": "Holiday rental (iCal)",
   "description": {
-    "en": "Starter template showing sensors, a switch, a dimmable light and a smart plug.",
-    "fr": "Template de démarrage : capteurs, interrupteur, lampe variable et prise connectée."
+    "en": "Guest check-ins and check-outs from Airbnb, Booking.com or Vrbo iCal exports: preheat, cleaning.",
+    "fr": "Arrivées et départs des voyageurs depuis les iCal Airbnb, Booking.com, Abritel : préchauffe, ménage.",
+    "de": "An- und Abreisen der Gäste aus iCal-Exporten von Airbnb, Booking.com, Vrbo: Vorheizen, Reinigung.",
+    "es": "Llegadas y salidas de huéspedes desde los iCal de Airbnb, Booking.com o Vrbo: precalentar, limpieza."
   },
   "version": "1.0.0",
-  "docker_image": "ghcr.io/gladysassistant/integration-template-js:1.0.0",
+  "docker_image": "ghcr.io/guim31/gladys-location-saisonniere:1.0.0",
   "gladys_version": ">=5.1.0",
-  "cover_image": "https://raw.githubusercontent.com/GladysAssistant/integration-template-js/master/cover.png",
-  "categories": ["lighting", "security", "environment"],
-  "transports": ["local", "cloud"],
+  "cover_image": "https://raw.githubusercontent.com/guim31/gladys-location-saisonniere/main/cover.png",
+  "categories": ["services"],
+  "transports": ["cloud"],
   "config_schema": [
     {
       "key": "intro",
       "type": "section",
-      "label": { "en": "Getting started", "fr": "Pour commencer" },
+      "label": {
+        "en": "Your rental properties",
+        "fr": "Vos logements",
+        "de": "Deine Unterkünfte",
+        "es": "Sus alojamientos"
+      },
       "description": {
-        "en": "The demo weather station reads real data from the free Open-Meteo API: pick the coordinates to observe. No account, no API key.",
-        "fr": "La station météo de démonstration lit de vraies données via l'API gratuite Open-Meteo : choisissez les coordonnées à observer. Pas de compte, pas de clé d'API."
+        "en": "Up to three properties, each one a device. Paste the iCal export address of its calendar on each platform (Airbnb: Calendar → Availability → Connect calendars; Booking.com: Rates & availability → Sync calendars). Private addresses: they stay in Gladys.",
+        "fr": "Jusqu'à trois logements, chacun un appareil. Collez l'adresse d'export iCal de son calendrier sur chaque plateforme (Airbnb : Calendrier → Disponibilités → Connecter des calendriers ; Booking.com : Tarifs et disponibilités → Synchroniser). Adresses privées : elles restent dans Gladys.",
+        "de": "Bis zu drei Unterkünfte, jede ein Gerät. Füge die iCal-Exportadresse ihres Kalenders auf jeder Plattform ein (Airbnb: Kalender → Verfügbarkeit → Kalender verbinden; Booking.com: Preise & Verfügbarkeit → Synchronisieren). Private Adressen: sie bleiben in Gladys.",
+        "es": "Hasta tres alojamientos, cada uno un dispositivo. Pegue la dirección de exportación iCal de su calendario en cada plataforma (Airbnb: Calendario → Disponibilidad → Conectar calendarios; Booking.com: Tarifas y disponibilidad → Sincronizar). Direcciones privadas: se quedan en Gladys."
       },
       "links": [
         {
-          "url": "https://open-meteo.com/en/docs",
-          "label": { "en": "Open-Meteo documentation", "fr": "Documentation Open-Meteo" }
+          "url": "https://github.com/guim31/gladys-location-saisonniere#readme",
+          "label": {
+            "en": "Documentation",
+            "fr": "Documentation",
+            "de": "Dokumentation",
+            "es": "Documentación"
+          }
         }
       ]
     },
     {
-      "key": "latitude",
-      "type": "number",
-      "label": { "en": "Latitude", "fr": "Latitude" },
-      "description": {
-        "en": "Latitude used for the demo weather sensor.",
-        "fr": "Latitude utilisée par le capteur météo de démonstration."
-      },
-      "placeholder": { "en": "e.g. 48.8566", "fr": "ex. 48.8566" },
-      "required": true,
-      "default": 48.8566,
-      "min": -90,
-      "max": 90
+      "key": "property_1_section",
+      "type": "section",
+      "label": {
+        "en": "Property 1",
+        "fr": "Logement 1",
+        "de": "Unterkunft 1",
+        "es": "Alojamiento 1"
+      }
     },
     {
-      "key": "longitude",
-      "type": "number",
-      "label": { "en": "Longitude", "fr": "Longitude" },
-      "description": {
-        "en": "Longitude used for the demo weather sensor.",
-        "fr": "Longitude utilisée par le capteur météo de démonstration."
+      "key": "property_1_name",
+      "type": "string",
+      "label": {
+        "en": "Property 1: name",
+        "fr": "Logement 1 : nom",
+        "de": "Unterkunft 1: Name",
+        "es": "Alojamiento 1: nombre"
       },
-      "placeholder": { "en": "e.g. 2.3522", "fr": "ex. 2.3522" },
-      "required": true,
-      "default": 2.3522,
-      "min": -180,
-      "max": 180
+      "description": {
+        "en": "Name of the device in Gladys.",
+        "fr": "Nom de l'appareil dans Gladys.",
+        "de": "Name des Geräts in Gladys.",
+        "es": "Nombre del dispositivo en Gladys."
+      },
+      "placeholder": {
+        "en": "e.g. Seaside flat",
+        "fr": "ex. Appartement de la plage",
+        "de": "z. B. Ferienwohnung am Meer",
+        "es": "p. ej. Piso de la playa"
+      },
+      "required": false
     },
     {
-      "key": "unit",
+      "key": "property_1_url_1",
+      "type": "secret",
+      "label": {
+        "en": "Property 1: iCal address",
+        "fr": "Logement 1 : adresse iCal",
+        "de": "Unterkunft 1: iCal-Adresse",
+        "es": "Alojamiento 1: dirección iCal"
+      },
+      "description": {
+        "en": "Export address (.ics) of the property calendar on a platform. Several addresses may be separated by a space.",
+        "fr": "Adresse d'export (.ics) du calendrier du logement sur une plateforme. Plusieurs adresses peuvent être séparées par une espace.",
+        "de": "Exportadresse (.ics) des Kalenders der Unterkunft auf einer Plattform. Mehrere Adressen lassen sich durch Leerzeichen trennen.",
+        "es": "Dirección de exportación (.ics) del calendario del alojamiento en una plataforma. Puede separar varias direcciones con un espacio."
+      },
+      "required": false
+    },
+    {
+      "key": "property_1_url_2",
+      "type": "secret",
+      "label": {
+        "en": "Property 1: other iCal address",
+        "fr": "Logement 1 : autre adresse iCal",
+        "de": "Unterkunft 1: weitere iCal-Adresse",
+        "es": "Alojamiento 1: otra dirección iCal"
+      },
+      "description": {
+        "en": "The same property on another platform: the stays are merged, the duplicates removed.",
+        "fr": "Le même logement sur une autre plateforme : les séjours sont fusionnés, les doublons retirés.",
+        "de": "Dieselbe Unterkunft auf einer anderen Plattform: Die Aufenthalte werden zusammengeführt, Doppelte entfernt.",
+        "es": "El mismo alojamiento en otra plataforma: las estancias se fusionan y se eliminan los duplicados."
+      },
+      "required": false
+    },
+    {
+      "key": "property_1_check_in",
       "type": "select",
-      "label": { "en": "Temperature unit", "fr": "Unité de température" },
+      "label": {
+        "en": "Property 1: check-in time",
+        "fr": "Logement 1 : heure d'arrivée",
+        "de": "Unterkunft 1: Anreisezeit",
+        "es": "Alojamiento 1: hora de llegada"
+      },
       "required": false,
-      "default": "celsius",
+      "default": "16",
       "options": [
-        { "value": "celsius", "label": { "en": "Celsius", "fr": "Celsius" } },
-        { "value": "fahrenheit", "label": { "en": "Fahrenheit", "fr": "Fahrenheit" } }
+        {
+          "value": "12",
+          "label": {
+            "en": "12:00",
+            "fr": "12 h 00",
+            "de": "12:00 Uhr",
+            "es": "12:00"
+          }
+        },
+        {
+          "value": "13",
+          "label": {
+            "en": "13:00",
+            "fr": "13 h 00",
+            "de": "13:00 Uhr",
+            "es": "13:00"
+          }
+        },
+        {
+          "value": "14",
+          "label": {
+            "en": "14:00",
+            "fr": "14 h 00",
+            "de": "14:00 Uhr",
+            "es": "14:00"
+          }
+        },
+        {
+          "value": "15",
+          "label": {
+            "en": "15:00",
+            "fr": "15 h 00",
+            "de": "15:00 Uhr",
+            "es": "15:00"
+          }
+        },
+        {
+          "value": "16",
+          "label": {
+            "en": "16:00",
+            "fr": "16 h 00",
+            "de": "16:00 Uhr",
+            "es": "16:00"
+          }
+        },
+        {
+          "value": "17",
+          "label": {
+            "en": "17:00",
+            "fr": "17 h 00",
+            "de": "17:00 Uhr",
+            "es": "17:00"
+          }
+        },
+        {
+          "value": "18",
+          "label": {
+            "en": "18:00",
+            "fr": "18 h 00",
+            "de": "18:00 Uhr",
+            "es": "18:00"
+          }
+        },
+        {
+          "value": "19",
+          "label": {
+            "en": "19:00",
+            "fr": "19 h 00",
+            "de": "19:00 Uhr",
+            "es": "19:00"
+          }
+        },
+        {
+          "value": "20",
+          "label": {
+            "en": "20:00",
+            "fr": "20 h 00",
+            "de": "20:00 Uhr",
+            "es": "20:00"
+          }
+        },
+        {
+          "value": "21",
+          "label": {
+            "en": "21:00",
+            "fr": "21 h 00",
+            "de": "21:00 Uhr",
+            "es": "21:00"
+          }
+        },
+        {
+          "value": "22",
+          "label": {
+            "en": "22:00",
+            "fr": "22 h 00",
+            "de": "22:00 Uhr",
+            "es": "22:00"
+          }
+        }
       ]
     },
     {
-      "key": "poll_frequency",
-      "type": "number",
-      "label": { "en": "Refresh interval (s)", "fr": "Intervalle de rafraîchissement (s)" },
-      "description": {
-        "en": "How often sensors are polled, in seconds (one minute minimum).",
-        "fr": "Fréquence d'interrogation des capteurs, en secondes (une minute minimum)."
+      "key": "property_1_check_out",
+      "type": "select",
+      "label": {
+        "en": "Property 1: check-out time",
+        "fr": "Logement 1 : heure de départ",
+        "de": "Unterkunft 1: Abreisezeit",
+        "es": "Alojamiento 1: hora de salida"
       },
       "required": false,
-      "default": 300,
-      "min": 60,
-      "max": 3600
+      "default": "11",
+      "options": [
+        {
+          "value": "7",
+          "label": {
+            "en": "7:00",
+            "fr": "7 h 00",
+            "de": "7:00 Uhr",
+            "es": "7:00"
+          }
+        },
+        {
+          "value": "8",
+          "label": {
+            "en": "8:00",
+            "fr": "8 h 00",
+            "de": "8:00 Uhr",
+            "es": "8:00"
+          }
+        },
+        {
+          "value": "9",
+          "label": {
+            "en": "9:00",
+            "fr": "9 h 00",
+            "de": "9:00 Uhr",
+            "es": "9:00"
+          }
+        },
+        {
+          "value": "10",
+          "label": {
+            "en": "10:00",
+            "fr": "10 h 00",
+            "de": "10:00 Uhr",
+            "es": "10:00"
+          }
+        },
+        {
+          "value": "11",
+          "label": {
+            "en": "11:00",
+            "fr": "11 h 00",
+            "de": "11:00 Uhr",
+            "es": "11:00"
+          }
+        },
+        {
+          "value": "12",
+          "label": {
+            "en": "12:00",
+            "fr": "12 h 00",
+            "de": "12:00 Uhr",
+            "es": "12:00"
+          }
+        },
+        {
+          "value": "13",
+          "label": {
+            "en": "13:00",
+            "fr": "13 h 00",
+            "de": "13:00 Uhr",
+            "es": "13:00"
+          }
+        },
+        {
+          "value": "14",
+          "label": {
+            "en": "14:00",
+            "fr": "14 h 00",
+            "de": "14:00 Uhr",
+            "es": "14:00"
+          }
+        }
+      ]
+    },
+    {
+      "key": "property_2_section",
+      "type": "section",
+      "label": {
+        "en": "Property 2",
+        "fr": "Logement 2",
+        "de": "Unterkunft 2",
+        "es": "Alojamiento 2"
+      }
+    },
+    {
+      "key": "property_2_name",
+      "type": "string",
+      "label": {
+        "en": "Property 2: name",
+        "fr": "Logement 2 : nom",
+        "de": "Unterkunft 2: Name",
+        "es": "Alojamiento 2: nombre"
+      },
+      "description": {
+        "en": "Name of the device in Gladys.",
+        "fr": "Nom de l'appareil dans Gladys.",
+        "de": "Name des Geräts in Gladys.",
+        "es": "Nombre del dispositivo en Gladys."
+      },
+      "placeholder": {
+        "en": "e.g. Seaside flat",
+        "fr": "ex. Appartement de la plage",
+        "de": "z. B. Ferienwohnung am Meer",
+        "es": "p. ej. Piso de la playa"
+      },
+      "required": false
+    },
+    {
+      "key": "property_2_url_1",
+      "type": "secret",
+      "label": {
+        "en": "Property 2: iCal address",
+        "fr": "Logement 2 : adresse iCal",
+        "de": "Unterkunft 2: iCal-Adresse",
+        "es": "Alojamiento 2: dirección iCal"
+      },
+      "description": {
+        "en": "Export address (.ics) of the property calendar on a platform. Several addresses may be separated by a space.",
+        "fr": "Adresse d'export (.ics) du calendrier du logement sur une plateforme. Plusieurs adresses peuvent être séparées par une espace.",
+        "de": "Exportadresse (.ics) des Kalenders der Unterkunft auf einer Plattform. Mehrere Adressen lassen sich durch Leerzeichen trennen.",
+        "es": "Dirección de exportación (.ics) del calendario del alojamiento en una plataforma. Puede separar varias direcciones con un espacio."
+      },
+      "required": false
+    },
+    {
+      "key": "property_2_url_2",
+      "type": "secret",
+      "label": {
+        "en": "Property 2: other iCal address",
+        "fr": "Logement 2 : autre adresse iCal",
+        "de": "Unterkunft 2: weitere iCal-Adresse",
+        "es": "Alojamiento 2: otra dirección iCal"
+      },
+      "description": {
+        "en": "The same property on another platform: the stays are merged, the duplicates removed.",
+        "fr": "Le même logement sur une autre plateforme : les séjours sont fusionnés, les doublons retirés.",
+        "de": "Dieselbe Unterkunft auf einer anderen Plattform: Die Aufenthalte werden zusammengeführt, Doppelte entfernt.",
+        "es": "El mismo alojamiento en otra plataforma: las estancias se fusionan y se eliminan los duplicados."
+      },
+      "required": false
+    },
+    {
+      "key": "property_2_check_in",
+      "type": "select",
+      "label": {
+        "en": "Property 2: check-in time",
+        "fr": "Logement 2 : heure d'arrivée",
+        "de": "Unterkunft 2: Anreisezeit",
+        "es": "Alojamiento 2: hora de llegada"
+      },
+      "required": false,
+      "default": "16",
+      "options": [
+        {
+          "value": "12",
+          "label": {
+            "en": "12:00",
+            "fr": "12 h 00",
+            "de": "12:00 Uhr",
+            "es": "12:00"
+          }
+        },
+        {
+          "value": "13",
+          "label": {
+            "en": "13:00",
+            "fr": "13 h 00",
+            "de": "13:00 Uhr",
+            "es": "13:00"
+          }
+        },
+        {
+          "value": "14",
+          "label": {
+            "en": "14:00",
+            "fr": "14 h 00",
+            "de": "14:00 Uhr",
+            "es": "14:00"
+          }
+        },
+        {
+          "value": "15",
+          "label": {
+            "en": "15:00",
+            "fr": "15 h 00",
+            "de": "15:00 Uhr",
+            "es": "15:00"
+          }
+        },
+        {
+          "value": "16",
+          "label": {
+            "en": "16:00",
+            "fr": "16 h 00",
+            "de": "16:00 Uhr",
+            "es": "16:00"
+          }
+        },
+        {
+          "value": "17",
+          "label": {
+            "en": "17:00",
+            "fr": "17 h 00",
+            "de": "17:00 Uhr",
+            "es": "17:00"
+          }
+        },
+        {
+          "value": "18",
+          "label": {
+            "en": "18:00",
+            "fr": "18 h 00",
+            "de": "18:00 Uhr",
+            "es": "18:00"
+          }
+        },
+        {
+          "value": "19",
+          "label": {
+            "en": "19:00",
+            "fr": "19 h 00",
+            "de": "19:00 Uhr",
+            "es": "19:00"
+          }
+        },
+        {
+          "value": "20",
+          "label": {
+            "en": "20:00",
+            "fr": "20 h 00",
+            "de": "20:00 Uhr",
+            "es": "20:00"
+          }
+        },
+        {
+          "value": "21",
+          "label": {
+            "en": "21:00",
+            "fr": "21 h 00",
+            "de": "21:00 Uhr",
+            "es": "21:00"
+          }
+        },
+        {
+          "value": "22",
+          "label": {
+            "en": "22:00",
+            "fr": "22 h 00",
+            "de": "22:00 Uhr",
+            "es": "22:00"
+          }
+        }
+      ]
+    },
+    {
+      "key": "property_2_check_out",
+      "type": "select",
+      "label": {
+        "en": "Property 2: check-out time",
+        "fr": "Logement 2 : heure de départ",
+        "de": "Unterkunft 2: Abreisezeit",
+        "es": "Alojamiento 2: hora de salida"
+      },
+      "required": false,
+      "default": "11",
+      "options": [
+        {
+          "value": "7",
+          "label": {
+            "en": "7:00",
+            "fr": "7 h 00",
+            "de": "7:00 Uhr",
+            "es": "7:00"
+          }
+        },
+        {
+          "value": "8",
+          "label": {
+            "en": "8:00",
+            "fr": "8 h 00",
+            "de": "8:00 Uhr",
+            "es": "8:00"
+          }
+        },
+        {
+          "value": "9",
+          "label": {
+            "en": "9:00",
+            "fr": "9 h 00",
+            "de": "9:00 Uhr",
+            "es": "9:00"
+          }
+        },
+        {
+          "value": "10",
+          "label": {
+            "en": "10:00",
+            "fr": "10 h 00",
+            "de": "10:00 Uhr",
+            "es": "10:00"
+          }
+        },
+        {
+          "value": "11",
+          "label": {
+            "en": "11:00",
+            "fr": "11 h 00",
+            "de": "11:00 Uhr",
+            "es": "11:00"
+          }
+        },
+        {
+          "value": "12",
+          "label": {
+            "en": "12:00",
+            "fr": "12 h 00",
+            "de": "12:00 Uhr",
+            "es": "12:00"
+          }
+        },
+        {
+          "value": "13",
+          "label": {
+            "en": "13:00",
+            "fr": "13 h 00",
+            "de": "13:00 Uhr",
+            "es": "13:00"
+          }
+        },
+        {
+          "value": "14",
+          "label": {
+            "en": "14:00",
+            "fr": "14 h 00",
+            "de": "14:00 Uhr",
+            "es": "14:00"
+          }
+        }
+      ]
+    },
+    {
+      "key": "property_3_section",
+      "type": "section",
+      "label": {
+        "en": "Property 3",
+        "fr": "Logement 3",
+        "de": "Unterkunft 3",
+        "es": "Alojamiento 3"
+      }
+    },
+    {
+      "key": "property_3_name",
+      "type": "string",
+      "label": {
+        "en": "Property 3: name",
+        "fr": "Logement 3 : nom",
+        "de": "Unterkunft 3: Name",
+        "es": "Alojamiento 3: nombre"
+      },
+      "description": {
+        "en": "Name of the device in Gladys.",
+        "fr": "Nom de l'appareil dans Gladys.",
+        "de": "Name des Geräts in Gladys.",
+        "es": "Nombre del dispositivo en Gladys."
+      },
+      "placeholder": {
+        "en": "e.g. Seaside flat",
+        "fr": "ex. Appartement de la plage",
+        "de": "z. B. Ferienwohnung am Meer",
+        "es": "p. ej. Piso de la playa"
+      },
+      "required": false
+    },
+    {
+      "key": "property_3_url_1",
+      "type": "secret",
+      "label": {
+        "en": "Property 3: iCal address",
+        "fr": "Logement 3 : adresse iCal",
+        "de": "Unterkunft 3: iCal-Adresse",
+        "es": "Alojamiento 3: dirección iCal"
+      },
+      "description": {
+        "en": "Export address (.ics) of the property calendar on a platform. Several addresses may be separated by a space.",
+        "fr": "Adresse d'export (.ics) du calendrier du logement sur une plateforme. Plusieurs adresses peuvent être séparées par une espace.",
+        "de": "Exportadresse (.ics) des Kalenders der Unterkunft auf einer Plattform. Mehrere Adressen lassen sich durch Leerzeichen trennen.",
+        "es": "Dirección de exportación (.ics) del calendario del alojamiento en una plataforma. Puede separar varias direcciones con un espacio."
+      },
+      "required": false
+    },
+    {
+      "key": "property_3_url_2",
+      "type": "secret",
+      "label": {
+        "en": "Property 3: other iCal address",
+        "fr": "Logement 3 : autre adresse iCal",
+        "de": "Unterkunft 3: weitere iCal-Adresse",
+        "es": "Alojamiento 3: otra dirección iCal"
+      },
+      "description": {
+        "en": "The same property on another platform: the stays are merged, the duplicates removed.",
+        "fr": "Le même logement sur une autre plateforme : les séjours sont fusionnés, les doublons retirés.",
+        "de": "Dieselbe Unterkunft auf einer anderen Plattform: Die Aufenthalte werden zusammengeführt, Doppelte entfernt.",
+        "es": "El mismo alojamiento en otra plataforma: las estancias se fusionan y se eliminan los duplicados."
+      },
+      "required": false
+    },
+    {
+      "key": "property_3_check_in",
+      "type": "select",
+      "label": {
+        "en": "Property 3: check-in time",
+        "fr": "Logement 3 : heure d'arrivée",
+        "de": "Unterkunft 3: Anreisezeit",
+        "es": "Alojamiento 3: hora de llegada"
+      },
+      "required": false,
+      "default": "16",
+      "options": [
+        {
+          "value": "12",
+          "label": {
+            "en": "12:00",
+            "fr": "12 h 00",
+            "de": "12:00 Uhr",
+            "es": "12:00"
+          }
+        },
+        {
+          "value": "13",
+          "label": {
+            "en": "13:00",
+            "fr": "13 h 00",
+            "de": "13:00 Uhr",
+            "es": "13:00"
+          }
+        },
+        {
+          "value": "14",
+          "label": {
+            "en": "14:00",
+            "fr": "14 h 00",
+            "de": "14:00 Uhr",
+            "es": "14:00"
+          }
+        },
+        {
+          "value": "15",
+          "label": {
+            "en": "15:00",
+            "fr": "15 h 00",
+            "de": "15:00 Uhr",
+            "es": "15:00"
+          }
+        },
+        {
+          "value": "16",
+          "label": {
+            "en": "16:00",
+            "fr": "16 h 00",
+            "de": "16:00 Uhr",
+            "es": "16:00"
+          }
+        },
+        {
+          "value": "17",
+          "label": {
+            "en": "17:00",
+            "fr": "17 h 00",
+            "de": "17:00 Uhr",
+            "es": "17:00"
+          }
+        },
+        {
+          "value": "18",
+          "label": {
+            "en": "18:00",
+            "fr": "18 h 00",
+            "de": "18:00 Uhr",
+            "es": "18:00"
+          }
+        },
+        {
+          "value": "19",
+          "label": {
+            "en": "19:00",
+            "fr": "19 h 00",
+            "de": "19:00 Uhr",
+            "es": "19:00"
+          }
+        },
+        {
+          "value": "20",
+          "label": {
+            "en": "20:00",
+            "fr": "20 h 00",
+            "de": "20:00 Uhr",
+            "es": "20:00"
+          }
+        },
+        {
+          "value": "21",
+          "label": {
+            "en": "21:00",
+            "fr": "21 h 00",
+            "de": "21:00 Uhr",
+            "es": "21:00"
+          }
+        },
+        {
+          "value": "22",
+          "label": {
+            "en": "22:00",
+            "fr": "22 h 00",
+            "de": "22:00 Uhr",
+            "es": "22:00"
+          }
+        }
+      ]
+    },
+    {
+      "key": "property_3_check_out",
+      "type": "select",
+      "label": {
+        "en": "Property 3: check-out time",
+        "fr": "Logement 3 : heure de départ",
+        "de": "Unterkunft 3: Abreisezeit",
+        "es": "Alojamiento 3: hora de salida"
+      },
+      "required": false,
+      "default": "11",
+      "options": [
+        {
+          "value": "7",
+          "label": {
+            "en": "7:00",
+            "fr": "7 h 00",
+            "de": "7:00 Uhr",
+            "es": "7:00"
+          }
+        },
+        {
+          "value": "8",
+          "label": {
+            "en": "8:00",
+            "fr": "8 h 00",
+            "de": "8:00 Uhr",
+            "es": "8:00"
+          }
+        },
+        {
+          "value": "9",
+          "label": {
+            "en": "9:00",
+            "fr": "9 h 00",
+            "de": "9:00 Uhr",
+            "es": "9:00"
+          }
+        },
+        {
+          "value": "10",
+          "label": {
+            "en": "10:00",
+            "fr": "10 h 00",
+            "de": "10:00 Uhr",
+            "es": "10:00"
+          }
+        },
+        {
+          "value": "11",
+          "label": {
+            "en": "11:00",
+            "fr": "11 h 00",
+            "de": "11:00 Uhr",
+            "es": "11:00"
+          }
+        },
+        {
+          "value": "12",
+          "label": {
+            "en": "12:00",
+            "fr": "12 h 00",
+            "de": "12:00 Uhr",
+            "es": "12:00"
+          }
+        },
+        {
+          "value": "13",
+          "label": {
+            "en": "13:00",
+            "fr": "13 h 00",
+            "de": "13:00 Uhr",
+            "es": "13:00"
+          }
+        },
+        {
+          "value": "14",
+          "label": {
+            "en": "14:00",
+            "fr": "14 h 00",
+            "de": "14:00 Uhr",
+            "es": "14:00"
+          }
+        }
+      ]
+    },
+    {
+      "key": "options_section",
+      "type": "section",
+      "label": {
+        "en": "Options",
+        "fr": "Options",
+        "de": "Optionen",
+        "es": "Opciones"
+      }
+    },
+    {
+      "key": "lead_hours",
+      "type": "number",
+      "label": {
+        "en": "Lead time before check-in (hours)",
+        "fr": "Anticipation avant l'arrivée (heures)",
+        "de": "Vorlauf vor der Anreise (Stunden)",
+        "es": "Antelación antes de la llegada (horas)"
+      },
+      "description": {
+        "en": "\"Check-in soon\" turns on, and its scene trigger fires, this many hours before the check-in: time to preheat. 0 turns it off.",
+        "fr": "« Arrivée imminente » passe à oui, et son déclencheur de scène part, ce nombre d'heures avant l'arrivée : le temps de préchauffer. 0 le désactive.",
+        "de": "„Anreise bald“ geht so viele Stunden vor der Anreise an, und sein Szenen-Auslöser startet: Zeit zum Vorheizen. 0 schaltet es ab.",
+        "es": "«Llegada próxima» se activa, y su disparador de escena se lanza, este número de horas antes de la llegada: tiempo para precalentar. 0 lo desactiva."
+      },
+      "required": false,
+      "default": 3,
+      "min": 0,
+      "max": 72
+    },
+    {
+      "key": "unavailable_events",
+      "type": "select",
+      "label": {
+        "en": "\"Not available\" dates",
+        "fr": "Dates « Not available »",
+        "de": "„Not available“-Daten",
+        "es": "Fechas «Not available»"
+      },
+      "description": {
+        "en": "Booking.com and Smoobu export every booking as \"Not available\", like a closed date. Airbnb and Vrbo blocks are always ignored.",
+        "fr": "Booking.com et Smoobu exportent chaque réservation en « Not available », comme une date fermée. Les blocages Airbnb et Vrbo sont toujours ignorés.",
+        "de": "Booking.com und Smoobu exportieren jede Buchung als „Not available“, wie ein gesperrtes Datum. Sperren von Airbnb und Vrbo werden immer ignoriert.",
+        "es": "Booking.com y Smoobu exportan cada reserva como «Not available», igual que una fecha cerrada. Los bloqueos de Airbnb y Vrbo siempre se ignoran."
+      },
+      "required": false,
+      "default": "stay",
+      "options": [
+        {
+          "value": "stay",
+          "label": {
+            "en": "Count them as stays",
+            "fr": "Les compter comme séjours",
+            "de": "Als Aufenthalte zählen",
+            "es": "Contarlas como estancias"
+          }
+        },
+        {
+          "value": "ignore",
+          "label": {
+            "en": "Ignore them",
+            "fr": "Les ignorer",
+            "de": "Ignorieren",
+            "es": "Ignorarlas"
+          }
+        }
+      ]
+    },
+    {
+      "key": "show_guest_details",
+      "type": "boolean",
+      "label": {
+        "en": "Show guest names and codes",
+        "fr": "Afficher noms et codes des voyageurs",
+        "de": "Gastnamen und Codes anzeigen",
+        "es": "Mostrar nombres y códigos"
+      },
+      "description": {
+        "en": "Off: the first names and reservation codes some feeds carry stay hidden from the widget and the scenes (personal data).",
+        "fr": "Désactivé : les prénoms et codes de réservation de certains flux restent masqués du widget et des scènes (données personnelles).",
+        "de": "Aus: Vornamen und Buchungscodes mancher Feeds bleiben in Widget und Szenen verborgen (personenbezogene Daten).",
+        "es": "Desactivado: los nombres y códigos de reserva de algunos calendarios quedan ocultos en el widget y las escenas (datos personales)."
+      },
+      "required": false,
+      "default": false
+    },
+    {
+      "key": "refresh_minutes",
+      "type": "select",
+      "label": {
+        "en": "Calendar refresh",
+        "fr": "Rafraîchissement des calendriers",
+        "de": "Aktualisierung der Kalender",
+        "es": "Actualización de los calendarios"
+      },
+      "required": false,
+      "default": "30",
+      "options": [
+        {
+          "value": "15",
+          "label": {
+            "en": "Every 15 minutes",
+            "fr": "Toutes les 15 minutes",
+            "de": "Alle 15 Minuten",
+            "es": "Cada 15 minutos"
+          }
+        },
+        {
+          "value": "30",
+          "label": {
+            "en": "Every 30 minutes",
+            "fr": "Toutes les 30 minutes",
+            "de": "Alle 30 Minuten",
+            "es": "Cada 30 minutos"
+          }
+        },
+        {
+          "value": "60",
+          "label": {
+            "en": "Every hour",
+            "fr": "Toutes les heures",
+            "de": "Jede Stunde",
+            "es": "Cada hora"
+          }
+        },
+        {
+          "value": "180",
+          "label": {
+            "en": "Every 3 hours",
+            "fr": "Toutes les 3 heures",
+            "de": "Alle 3 Stunden",
+            "es": "Cada 3 horas"
+          }
+        }
+      ]
+    },
+    {
+      "key": "language",
+      "type": "select",
+      "label": {
+        "en": "Language of the names",
+        "fr": "Langue des noms",
+        "de": "Sprache der Namen",
+        "es": "Idioma de los nombres"
+      },
+      "description": {
+        "en": "Names of the features and texts of the states, set when the device is created.",
+        "fr": "Noms des fonctionnalités et textes des états, fixés à la création de l'appareil.",
+        "de": "Namen der Funktionen und Texte der Zustände, beim Anlegen des Geräts festgelegt.",
+        "es": "Nombres de las funciones y textos de los estados, fijados al crear el dispositivo."
+      },
+      "required": false,
+      "default": "fr",
+      "options": [
+        {
+          "value": "en",
+          "label": {
+            "en": "English",
+            "fr": "Anglais",
+            "de": "Englisch",
+            "es": "Inglés"
+          }
+        },
+        {
+          "value": "fr",
+          "label": {
+            "en": "French",
+            "fr": "Français",
+            "de": "Französisch",
+            "es": "Francés"
+          }
+        },
+        {
+          "value": "de",
+          "label": {
+            "en": "German",
+            "fr": "Allemand",
+            "de": "Deutsch",
+            "es": "Alemán"
+          }
+        },
+        {
+          "value": "es",
+          "label": {
+            "en": "Spanish",
+            "fr": "Espagnol",
+            "de": "Spanisch",
+            "es": "Español"
+          }
+        }
+      ]
     }
   ],
   "actions": [
     {
-      "key": "test_weather",
-      "label": { "en": "Test the weather provider", "fr": "Tester le fournisseur météo" },
-      "timeout_seconds": 30
-    },
-    {
-      "key": "identify",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
-      "fields": [
-        {
-          "key": "device",
-          "type": "select",
-          "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
-          "required": true
-        }
-      ]
+      "key": "check_feeds",
+      "label": {
+        "en": "Check the calendars now",
+        "fr": "Vérifier les calendriers",
+        "de": "Kalender jetzt prüfen",
+        "es": "Comprobar los calendarios"
+      },
+      "description": {
+        "en": "Downloads every calendar again and sums up the coming stays.",
+        "fr": "Télécharge à nouveau chaque calendrier et résume les séjours à venir.",
+        "de": "Lädt jeden Kalender neu und fasst die kommenden Aufenthalte zusammen.",
+        "es": "Descarga de nuevo cada calendario y resume las próximas estancias."
+      },
+      "timeout_seconds": 60
     }
   ],
   "scene_triggers": [
     {
-      "key": "motion_detected",
-      "label": { "en": "Motion detected", "fr": "Mouvement détecté" },
+      "key": "check_in",
+      "label": {
+        "en": "Guest check-in",
+        "fr": "Arrivée des voyageurs",
+        "de": "Anreise der Gäste",
+        "es": "Llegada de los huéspedes"
+      },
       "description": {
-        "en": "A demo motion sensor saw a person or an animal move.",
-        "fr": "Un détecteur de démonstration a vu bouger une personne ou un animal."
+        "en": "The check-in time of a stay has come.",
+        "fr": "L'heure d'arrivée d'un séjour est atteinte.",
+        "de": "Die Anreisezeit eines Aufenthalts ist erreicht.",
+        "es": "Ha llegado la hora de llegada de una estancia."
       },
       "fields": [
         {
-          "key": "device",
+          "key": "property",
           "type": "select",
           "source": "devices",
-          "label": { "en": "Sensor", "fr": "Détecteur" }
-        },
-        {
-          "key": "target",
-          "type": "multi_select",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" },
-          "options": [
-            { "value": "person", "label": { "en": "Person", "fr": "Personne" } },
-            { "value": "animal", "label": { "en": "Animal", "fr": "Animal" } }
-          ]
+          "label": {
+            "en": "Property",
+            "fr": "Logement",
+            "de": "Unterkunft",
+            "es": "Alojamiento"
+          }
         }
       ],
       "variables": [
         {
-          "key": "target",
+          "key": "property_name",
           "type": "string",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" }
+          "label": {
+            "en": "Property",
+            "fr": "Logement",
+            "de": "Unterkunft",
+            "es": "Alojamiento"
+          }
+        },
+        {
+          "key": "platform",
+          "type": "string",
+          "label": {
+            "en": "Platform",
+            "fr": "Plateforme",
+            "de": "Plattform",
+            "es": "Plataforma"
+          }
+        },
+        {
+          "key": "nights",
+          "type": "number",
+          "label": {
+            "en": "Nights",
+            "fr": "Nuits",
+            "de": "Nächte",
+            "es": "Noches"
+          }
+        },
+        {
+          "key": "check_in",
+          "type": "string",
+          "label": {
+            "en": "Check-in",
+            "fr": "Arrivée",
+            "de": "Anreise",
+            "es": "Llegada"
+          }
+        },
+        {
+          "key": "check_out",
+          "type": "string",
+          "label": {
+            "en": "Check-out",
+            "fr": "Départ",
+            "de": "Abreise",
+            "es": "Salida"
+          }
+        },
+        {
+          "key": "turnover",
+          "type": "boolean",
+          "label": {
+            "en": "Same-day turnover",
+            "fr": "Rotation le même jour",
+            "de": "Wechsel am selben Tag",
+            "es": "Cambio el mismo día"
+          }
+        },
+        {
+          "key": "guest",
+          "type": "string",
+          "label": {
+            "en": "Guest (if shown)",
+            "fr": "Voyageur (si affiché)",
+            "de": "Gast (falls angezeigt)",
+            "es": "Huésped (si se muestra)"
+          }
+        }
+      ]
+    },
+    {
+      "key": "check_out",
+      "label": {
+        "en": "Guest check-out",
+        "fr": "Départ des voyageurs",
+        "de": "Abreise der Gäste",
+        "es": "Salida de los huéspedes"
+      },
+      "description": {
+        "en": "The check-out time of a stay has come: time for cleaning, heating off.",
+        "fr": "L'heure de départ d'un séjour est atteinte : ménage, chauffage coupé.",
+        "de": "Die Abreisezeit eines Aufenthalts ist erreicht: Reinigung, Heizung aus.",
+        "es": "Ha llegado la hora de salida de una estancia: limpieza, calefacción apagada."
+      },
+      "fields": [
+        {
+          "key": "property",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Property",
+            "fr": "Logement",
+            "de": "Unterkunft",
+            "es": "Alojamiento"
+          }
+        }
+      ],
+      "variables": [
+        {
+          "key": "property_name",
+          "type": "string",
+          "label": {
+            "en": "Property",
+            "fr": "Logement",
+            "de": "Unterkunft",
+            "es": "Alojamiento"
+          }
+        },
+        {
+          "key": "platform",
+          "type": "string",
+          "label": {
+            "en": "Platform",
+            "fr": "Plateforme",
+            "de": "Plattform",
+            "es": "Plataforma"
+          }
+        },
+        {
+          "key": "nights",
+          "type": "number",
+          "label": {
+            "en": "Nights",
+            "fr": "Nuits",
+            "de": "Nächte",
+            "es": "Noches"
+          }
+        },
+        {
+          "key": "check_in",
+          "type": "string",
+          "label": {
+            "en": "Check-in",
+            "fr": "Arrivée",
+            "de": "Anreise",
+            "es": "Llegada"
+          }
+        },
+        {
+          "key": "check_out",
+          "type": "string",
+          "label": {
+            "en": "Check-out",
+            "fr": "Départ",
+            "de": "Abreise",
+            "es": "Salida"
+          }
+        },
+        {
+          "key": "turnover",
+          "type": "boolean",
+          "label": {
+            "en": "Same-day turnover",
+            "fr": "Rotation le même jour",
+            "de": "Wechsel am selben Tag",
+            "es": "Cambio el mismo día"
+          }
+        },
+        {
+          "key": "guest",
+          "type": "string",
+          "label": {
+            "en": "Guest (if shown)",
+            "fr": "Voyageur (si affiché)",
+            "de": "Gast (falls angezeigt)",
+            "es": "Huésped (si se muestra)"
+          }
+        }
+      ]
+    },
+    {
+      "key": "arrival_soon",
+      "label": {
+        "en": "Check-in soon",
+        "fr": "Arrivée imminente",
+        "de": "Anreise bald",
+        "es": "Llegada próxima"
+      },
+      "description": {
+        "en": "The lead time before a check-in has come (Options of the integration): preheat.",
+        "fr": "Le délai d'anticipation avant une arrivée est atteint (options de l'intégration) : préchauffage.",
+        "de": "Der Vorlauf vor einer Anreise ist erreicht (Optionen der Integration): Vorheizen.",
+        "es": "Se ha alcanzado la antelación antes de una llegada (opciones de la integración): precalentar."
+      },
+      "fields": [
+        {
+          "key": "property",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Property",
+            "fr": "Logement",
+            "de": "Unterkunft",
+            "es": "Alojamiento"
+          }
+        }
+      ],
+      "variables": [
+        {
+          "key": "property_name",
+          "type": "string",
+          "label": {
+            "en": "Property",
+            "fr": "Logement",
+            "de": "Unterkunft",
+            "es": "Alojamiento"
+          }
+        },
+        {
+          "key": "platform",
+          "type": "string",
+          "label": {
+            "en": "Platform",
+            "fr": "Plateforme",
+            "de": "Plattform",
+            "es": "Plataforma"
+          }
+        },
+        {
+          "key": "nights",
+          "type": "number",
+          "label": {
+            "en": "Nights",
+            "fr": "Nuits",
+            "de": "Nächte",
+            "es": "Noches"
+          }
+        },
+        {
+          "key": "check_in",
+          "type": "string",
+          "label": {
+            "en": "Check-in",
+            "fr": "Arrivée",
+            "de": "Anreise",
+            "es": "Llegada"
+          }
+        },
+        {
+          "key": "check_out",
+          "type": "string",
+          "label": {
+            "en": "Check-out",
+            "fr": "Départ",
+            "de": "Abreise",
+            "es": "Salida"
+          }
+        },
+        {
+          "key": "turnover",
+          "type": "boolean",
+          "label": {
+            "en": "Same-day turnover",
+            "fr": "Rotation le même jour",
+            "de": "Wechsel am selben Tag",
+            "es": "Cambio el mismo día"
+          }
+        },
+        {
+          "key": "guest",
+          "type": "string",
+          "label": {
+            "en": "Guest (if shown)",
+            "fr": "Voyageur (si affiché)",
+            "de": "Gast (falls angezeigt)",
+            "es": "Huésped (si se muestra)"
+          }
         }
       ]
     }
   ],
   "scene_actions": [
     {
-      "key": "identify_device",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
-      "description": {
-        "en": "Make a device signal itself (the demo light blinks).",
-        "fr": "Fait se signaler un appareil (la lampe de démonstration clignote)."
+      "key": "next_stay",
+      "label": {
+        "en": "Get the next stay",
+        "fr": "Lire le prochain séjour",
+        "de": "Nächsten Aufenthalt lesen",
+        "es": "Leer la próxima estancia"
       },
-      "timeout_seconds": 15,
+      "description": {
+        "en": "The ongoing or next stay of a property, for a message or a condition.",
+        "fr": "Le séjour en cours ou le prochain d'un logement, pour un message ou une condition.",
+        "de": "Der laufende oder nächste Aufenthalt einer Unterkunft, für eine Nachricht oder Bedingung.",
+        "es": "La estancia en curso o la próxima de un alojamiento, para un mensaje o una condición."
+      },
+      "timeout_seconds": 10,
       "fields": [
         {
-          "key": "device",
+          "key": "property",
           "type": "select",
           "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
+          "label": {
+            "en": "Property",
+            "fr": "Logement",
+            "de": "Unterkunft",
+            "es": "Alojamiento"
+          },
           "required": true
         }
       ],
       "outputs": [
         {
-          "key": "signalled",
+          "key": "found",
           "type": "boolean",
-          "label": { "en": "Device signalled", "fr": "Appareil signalé" }
+          "label": {
+            "en": "Stay found",
+            "fr": "Séjour trouvé",
+            "de": "Aufenthalt gefunden",
+            "es": "Estancia encontrada"
+          }
+        },
+        {
+          "key": "property_name",
+          "type": "string",
+          "label": {
+            "en": "Property",
+            "fr": "Logement",
+            "de": "Unterkunft",
+            "es": "Alojamiento"
+          }
+        },
+        {
+          "key": "occupied",
+          "type": "boolean",
+          "label": {
+            "en": "Occupied now",
+            "fr": "Occupé maintenant",
+            "de": "Jetzt belegt",
+            "es": "Ocupado ahora"
+          }
+        },
+        {
+          "key": "check_in",
+          "type": "string",
+          "label": {
+            "en": "Check-in",
+            "fr": "Arrivée",
+            "de": "Anreise",
+            "es": "Llegada"
+          }
+        },
+        {
+          "key": "check_out",
+          "type": "string",
+          "label": {
+            "en": "Check-out",
+            "fr": "Départ",
+            "de": "Abreise",
+            "es": "Salida"
+          }
+        },
+        {
+          "key": "nights",
+          "type": "number",
+          "label": {
+            "en": "Nights",
+            "fr": "Nuits",
+            "de": "Nächte",
+            "es": "Noches"
+          }
+        },
+        {
+          "key": "days_to_check_in",
+          "type": "number",
+          "label": {
+            "en": "Days before check-in",
+            "fr": "Jours avant l'arrivée",
+            "de": "Tage bis zur Anreise",
+            "es": "Días antes de la llegada"
+          }
+        },
+        {
+          "key": "platform",
+          "type": "string",
+          "label": {
+            "en": "Platform",
+            "fr": "Plateforme",
+            "de": "Plattform",
+            "es": "Plataforma"
+          }
         }
       ]
     }
   ],
   "widgets": [
     {
-      "key": "demo_status",
-      "label": { "en": "Demo status", "fr": "État de la démo" },
-      "description": {
-        "en": "Live temperature and plug power, plug connection and observed location.",
-        "fr": "Température et puissance en direct, connexion de la prise, position observée."
+      "key": "stays",
+      "label": {
+        "en": "Rental stays",
+        "fr": "Séjours du logement",
+        "de": "Aufenthalte",
+        "es": "Estancias del alquiler"
       },
-      "icon": "activity",
-      "action_timeout_seconds": 15
+      "description": {
+        "en": "Occupied or vacant now, then the coming stays, check-in to check-out.",
+        "fr": "Occupé ou libre maintenant, puis les séjours à venir, de l'arrivée au départ.",
+        "de": "Jetzt belegt oder frei, dann die kommenden Aufenthalte, von Anreise bis Abreise.",
+        "es": "Ocupado o libre ahora, luego las próximas estancias, de llegada a salida."
+      },
+      "icon": "home",
+      "settings": [
+        {
+          "key": "property",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Property (all if empty)",
+            "fr": "Logement (tous si vide)",
+            "de": "Unterkunft (alle, wenn leer)",
+            "es": "Alojamiento (todos si vacío)"
+          }
+        },
+        {
+          "key": "show_status",
+          "type": "boolean",
+          "label": {
+            "en": "Show occupied / vacant",
+            "fr": "Afficher occupé / libre",
+            "de": "Belegt / frei anzeigen",
+            "es": "Mostrar ocupado / libre"
+          },
+          "default": true
+        }
+      ]
     }
   ]
 }
